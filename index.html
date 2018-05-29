@@ -33,8 +33,15 @@
 <div>Antialising:</div>
   <table>
   <tr><td>Linear Filter</td><td><input id="linear_filter" type="checkbox" checked="true"></td></tr>
-  <tr><td>Upsample</td><td><input id="upsamp" type="number" min="0" max="200" value="1"></td></tr>
-  <tr><td>Downsample</td><td><input id="downsamp" type="number" min="0" max="200" value="1"></td></tr>
+  <tr><td>Upsample</td><td><input id="upsamp" type="number" min="0" max="200" step="any" value="1"></td></tr>
+  <tr><td>Downsample</td><td><input id="downsamp" type="number" min="0" max="200" step="any" value="1"></td></tr>
+  </table>
+</div>
+<div class="settings_type">
+<div>Pattern:</div>
+  <table>
+  <tr><td>Scale</td><td><input id="patternscale" type="number" min="0" step="any" max="200" value="1"></td></tr>
+  <tr><td>Shift</td><td><input id="patternshift" type="number" min="0" max="2000" value="0"></td></tr>
   </table>
 </div>
 </div>
@@ -114,6 +121,8 @@ function start_rendering()
   autostereogram_settings.filter_linear = $("linear_filter").checked;
   autostereogram_settings.upscale = $("upsamp").value*1;
   autostereogram_settings.downscale = $("downsamp").value*1;
+  autostereogram_settings.pattern_scale = $("patternscale").value*1;
+  autostereogram_settings.pattern_shift = $("patternshift").value*1;
 
   /*Starting the render*/
   if(pattern.loadet == false || depth.loadet == false) return; 	

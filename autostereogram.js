@@ -12,14 +12,16 @@ autostereogram_settings ={
 	gmax : 255,
   filter_linear : true,
   upscale : 1,
-  downscale : 1
+  downscale : 1,
+  pattern_scale : 1,
+  pattern_shift : 0
 }
 
 function create_stereogram(depth,pattern)
 {
   var resized_depthmap = scale(depth,autostereogram_settings.upscale)
 	var canvas = initialize_canvas(resized_depthmap);
-	if(pattern) create_image_pattern(canvas, pattern)
+	if(pattern) create_image_pattern(canvas, scale(pattern,autostereogram_settings.pattern_scale))
 	else create_random_pattern(canvas)
   var result = scale(make_stereogram(canvas),1/autostereogram_settings.downscale)
   result.id = "stereoimage";
@@ -55,12 +57,36 @@ function initialize_canvas(depth_map)
 /*Fills th first colum of the canvas with a given pattern image*/
 function create_image_pattern(canvas, pattern_image)
 {
-	var ctx=canvas.getContext("2d");
-	var pat=ctx.createPattern(pattern_image,"repeat");
-	ctx.rect(0,0,autostereogram_settings.colum_width,canvas.height);
-	ctx.fillStyle=pat;
-	ctx.fill();
+  var pattern_y_start = 0;
+  var pattern_x_start = 0;
+  var pattern_x_end = autostereogram_settings.colum_width;
+  if(pattern_image.width < pattern_x_end) 
+  {
+          pattern_x_end = pattern_image.width;
+  }
+  do{
+    if(pattern_x_start+pattern_image.width > autostereogram_settings.colum_width) pattern_x_end = autostereogram_settings.colum_width - pattern_x_start;
+	  var ctx=canvas.getContext("2d");
+    fill_row(canvas,pattern_image,pattern_x_start,pattern_x_end,pattern_y_start)
+
+    pattern_y_start -= autostereogram_settings.pattern_shift;
+    pattern_x_start += pattern_x_end; 
+    pattern_x_end = pattern_image.width;
+
+  }while(pattern_x_start < autostereogram_settings.colum_width);
 	return canvas;
+}
+
+/*fills a single row of a pattern*/
+function fill_row(canvas,image,startx,width,starty)
+{
+  var start = starty;
+  var ctx=canvas.getContext("2d");
+  while(start < canvas.height)
+  {
+    ctx.drawImage(image,0,0,width,image.height,startx,start,width,image.height);
+    start+=image.height
+  }
 }
 
 /*fills the first Colum of the canvas with random dot pattern*/
