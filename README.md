@@ -20,5 +20,7 @@ create\_stereogram(depth,pattern) will return a canvas element with the "stereoi
 5. filter_linear: interpolates between pixels, thus creating smooth height gradient
 6. upscale: scales the depth map before calculating the 3d image 2 = 200% 0,5 = 50%
 7. downscale: scales the finished stereogram. 2 = 50%, 0.5 = 200%
+8. pattern_scale : scaling of the pattern image. 2 = 200%, 0,5 = 50%
+9. pattern_shift : negative amount pattern will be shiftet, if the pattern is smaller than the colum width. May be used to avoid alialising
 
 
