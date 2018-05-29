@@ -1,0 +1,70 @@
+.invisible
+{
+  opacity:0;
+}
+
+#generate_button
+{
+  float:right;
+  margin-right:0px;
+}
+
+.header_elem
+{
+  float:left;
+  padding:5px;
+  margin-right:2px;
+  background-color:#994d33;
+}
+
+.header_elem:hover
+{
+  background-color:#86432d;
+}
+
+.header_elem_aktive
+{
+  background-color:#86432d;
+}
+
+
+.header
+{
+  background-color:#b3664d;
+  width:100%;
+  overflow:auto;
+}
+
+.advanced
+{
+  background-color:#86432d;
+  overflow:auto;
+}
+
+.advanced div
+{
+  padding:3px;
+}
+.settings_type
+{
+  padding:3px;
+  float:left;
+}
+
+.advanced input
+{
+  width: 50px;
+}
+
+body
+{
+  background-color:#361f17;
+  margin:0px;
+  color:#b3664d;
+}
+
+canvas
+{
+    display: block;
+    margin: 10px auto;
+}

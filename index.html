@@ -1,0 +1,153 @@
+ <!DOCTYPE html>
+<html>
+<head>
+<title>Autostereogram</title>
+<meta charset="utf-8"/>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class="header">  
+  <div id="advanced_button" class="header_elem">Advanced</div>
+  <div class="header_elem" id="depthbutton">Depth Map</div>
+  <div class="header_elem" id="patternbutton">Pattern</div>
+  <div class="header_elem" id="usepattern">Mode: Pattern</div>
+  <div class="header_elem" id="generate_button">Generate</div>
+</div>
+<div id="advanced" class="advanced" style="display:none">
+<div class="settings_type">
+<div>Pixel Settings:</div>
+  <table>
+  <tr><td>Colum width</td><td><input id="colum_width" type="number" min="0" max="1000" value="144"></td></tr>
+  <tr><td>max offset</td><td><input id="max_offset" type="number" min="0" max="1000" value="20"></td></tr>
+  </table>
+</div>
+<div class="settings_type">
+<div>Color Settings:</div>
+  <table>
+  <tr><td>Red</td><td><input id="rmin" type="number" min="0" max="255" value="0"></td><td>-</td><td><input id="rmax" type="number" min="0" max="255" value="255"></td></tr>
+  <tr><td>Green</td><td><input id="gmin" type="number" min="0" max="255" value="0"></td><td>-</td><td><input id="gmax" type="number" min="0" max="255" value="255"></td></tr>
+  <tr><td>Blue</td><td><input id="bmin" type="number" min="0" max="255" value="0"></td><td>-</td><td><input id="bmax" type="number" min="0" max="255" value="255"></td></tr>
+  </table>
+</div>
+<div class="settings_type">
+<div>Antialising:</div>
+  <table>
+  <tr><td>Linear Filter</td><td><input id="linear_filter" type="checkbox" checked="true"></td></tr>
+  <tr><td>Upsample</td><td><input id="upsamp" type="number" min="0" max="200" value="1"></td></tr>
+  <tr><td>Downsample</td><td><input id="downsamp" type="number" min="0" max="200" value="1"></td></tr>
+  </table>
+</div>
+</div>
+</div>
+<script src="autostereogram.js"></script>
+<input id="depth" class="invisible" name="depth" type="file"></input>
+<input id="pattern" class="invisible" name="depth" type="file"></input>
+<script>
+function $(x){return document.getElementById(x);}
+
+$("usepattern").addEventListener("mousedown",()=>{
+  if($("usepattern").innerHTML == "Mode: Pattern")
+  {
+    $("usepattern").innerHTML = "Mode: Random";
+  }
+  else
+  {
+    $("usepattern").innerHTML = "Mode: Pattern";
+  }
+})
+
+$("advanced_button").addEventListener("mousedown",()=>{
+  if($("advanced").style.display == "none")
+  {
+    $("advanced").style.display = "";
+    $("advanced_button").classList.add("header_elem_aktive");
+  }
+  else
+  {
+    $("advanced").style.display = "none";
+    $("advanced_button").classList.remove("header_elem_aktive");
+  }
+})
+
+$("depthbutton").addEventListener("mousedown",()=>{
+  $("depth").click();
+})
+
+$("patternbutton").addEventListener("mousedown",()=>{
+  $("pattern").click();
+})
+
+$("pattern").addEventListener("change",()=>{
+        var fr = new FileReader();
+        fr.onload = function () {
+            pattern.src = fr.result;
+        }
+        fr.readAsDataURL($("pattern").files[0]);
+})
+
+
+$("depth").addEventListener("change",()=>{
+        var fr = new FileReader();
+        fr.onload = function () {
+            depth.src = fr.result;
+        }
+        fr.readAsDataURL($("depth").files[0]);
+})
+
+$("generate_button").addEventListener("mousedown",()=>{
+  start_rendering()
+});
+
+function start_rendering()
+{
+  /*updating settings*/
+	autostereogram_settings.colum_width=$("colum_width").value*$("upsamp").value;
+	/*max shift e.g. shift by "white" pixels oft the grayscale*/
+	autostereogram_settings.max_shift=$("max_offset").value*$("upsamp").value;
+	/*max and min values for colors*/
+	autostereogram_settings.rmin=$("rmin").value*1;
+	autostereogram_settings.rmax=$("rmax").value*1;
+	autostereogram_settings.bmin=$("bmin").value*1;
+	autostereogram_settings.bmax=$("bmax").value*1;
+	autostereogram_settings.gmin=$("gmin").value*1;
+	autostereogram_settings.gmax=$("gmax").value*1;
+  autostereogram_settings.filter_linear = $("linear_filter").checked;
+  autostereogram_settings.upscale = $("upsamp").value*1;
+  autostereogram_settings.downscale = $("downsamp").value*1;
+
+  /*Starting the render*/
+  if(pattern.loadet == false || depth.loadet == false) return; 	
+	if($("stereoimage")) document.body.removeChild($("stereoimage"));
+  if($("usepattern").innerHTML == "Mode: Pattern")
+  {
+    document.body.appendChild(create_stereogram(depth,pattern));
+  }else
+  {
+    document.body.appendChild(create_stereogram(depth));
+  }
+}
+
+var depth = new Image();
+depth.loadet = false;
+
+//drawing of the test image - img1
+depth.onload = function () {
+  depth.loadet = true;
+  start_rendering();
+};
+
+depth.src = 'depth.png';
+
+var pattern = new Image();
+pattern.loadet = false;
+
+//drawing of the test image - img1
+pattern.onload = function () {
+  pattern.loadet = true;
+  start_rendering();
+};
+
+pattern.src = 'pattern-small.png';
+</script>
+</body>
+</html> 
