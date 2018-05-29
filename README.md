@@ -1,5 +1,6 @@
 # autostereogram
 standalone js autostereogram generator with demo webpage.
+
 for more informations about autostereograms refer to the wikipedia page:
 https://en.wikipedia.org/wiki/Autostereogram
 
@@ -8,6 +9,8 @@ https://jhippe.de/autostereogram/
 
 ## usage
 to use the autostereogram.js in your own Projekts, simply tweak the settings in autostereogram\_settings and call create\_stereogram(depth,pattern) using a grayscale image as depth Map and a Vivid image as Pattern. If no pattern is given, the script will switch to random dot mode.
+
+create\_stereogram(depth,pattern) will return a canvas element with the "stereoimage" id. 
 
 ## settings
 1. colum_width: defines the amount of pixels, each row will have
