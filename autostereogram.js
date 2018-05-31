@@ -14,7 +14,7 @@ autostereogram_settings ={
   upscale : 1,
   downscale : 1,
   pattern_scale : 1,
-  pattern_shift : 0,
+  pattern_shift : 10,
   remove_hidden_surface : true
 }
 
