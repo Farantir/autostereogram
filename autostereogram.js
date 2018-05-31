@@ -14,15 +14,24 @@ autostereogram_settings ={
   upscale : 1,
   downscale : 1,
   pattern_scale : 1,
-  pattern_shift : 0
+  pattern_shift : 0,
+  remove_hidden_surface : true
 }
 
 function create_stereogram(depth,pattern)
 {
   var resized_depthmap = scale(depth,autostereogram_settings.upscale)
 	var canvas = initialize_canvas(resized_depthmap);
-	if(pattern) create_image_pattern(canvas, scale(pattern,autostereogram_settings.pattern_scale))
-	else create_random_pattern(canvas)
+	if(pattern)
+  {
+    create_image_pattern(canvas, scale(pattern,autostereogram_settings.pattern_scale));
+    autostereogram_settings.random_dot = false;
+  }
+	else 
+  {
+    create_random_pattern(canvas);
+    autostereogram_settings.random_dot = true;
+  }
   var result = scale(make_stereogram(canvas),1/autostereogram_settings.downscale)
   result.id = "stereoimage";
 	return result;
@@ -125,36 +134,117 @@ function make_stereogram(canvas)
   var canv_data_stuff = ctx.getImageData(0, 0, canvas.width, canvas.height);
   var canv_data = canv_data_stuff.data;
   /*shifting pixesls using depth map information*/
+
+  /*remove hidden surfaces, if enabeld*/
+  if(autostereogram_settings.remove_hidden_surface)
+  {
+    /*array of "invisible" pixels because of ambiant occulusion (hidden surface removal)*/
+    var hidden = []
+    for(var y=0; y<=canvas.height; y++)
+    { 
+      hidden[y] = [];
+      for(var x=0;x<=canvas.width;x++) hidden[y][x] = 0;
+    }
+
+    /*calculation if pixels are hidden*/
+    for(var y = 0; y<canvas.height; y++)
+    {
+      for(var x = autostereogram_settings.colum_width+1; x<=canvas.width; x++)
+      {
+        /*calculating the position of the pixel in the image data*/
+        var pos = (y*canvas.width*4)+x*4;
+        /*recieving offset based on depth map data*/
+        var offset = Math.floor((autostereogram_settings.max_shift/255)*canv_data[pos]);
+        var hid = 1;
+        /*marking every pixel that needs to be filles randomly, because its reference surface is hidden*/
+        for(hid = 1; hid<offset; hid++)
+        {
+          var origin = canv_data[pos]-170*(1-(1/(autostereogram_settings.colum_width/autostereogram_settings.max_shift)))
+          var current = canv_data[pos+(hid*4)]+(offset-hid)*(255/autostereogram_settings.max_shift)
+          if(origin > current) 
+          {
+            hidden[y][x+hid] =1;
+          }
+        }
+      }
+    }
+
+    /*assining hidden areas a Gradiend so they will blend in nicer*/
+    var ones = 0;
+    for(var y = 0; y<canvas.height; y++)
+    {
+      for(var x = autostereogram_settings.colum_width+1; x<=canvas.width; x++)
+      {
+         if(hidden[y][x]==1) ones++;
+         else if(ones > 0)
+         {
+            /*opacity increase each pixel*/
+            if(ones > 10) ones =6;
+            var deltaopacity = 1/ones
+            for(var i = ones; i>0; i--) hidden[y][x-i] = deltaopacity*i;
+             /*resettings count*/
+            ones = 0;
+         }
+      }
+    }
+  }
+
   for(var y = 0; y<canvas.height; y++)
   {
-    for(var x = autostereogram_settings.colum_width; x<=canvas.width; x++)
+    for(var x = autostereogram_settings.colum_width+1; x<=canvas.width; x++)
     {
       /*calculating the position of the pixel in the image data*/
       var pos = (y*canvas.width*4)+x*4;
       /*recieving offset based on depth map data*/
       var offset = Math.floor((autostereogram_settings.max_shift/255)*canv_data[pos]);
       /*using no Filter for image*/
-      if(autostereogram_settings.filter_linear == false)
-      {
-	      /*assining the correct color value to the pixel*/
-	      var pixel_to_access = pos-((autostereogram_settings.colum_width-offset)*4);
+    
+        if(autostereogram_settings.filter_linear == false)
+        {
+	        /*assining the correct color value to the pixel*/
+	        var pixel_to_access = pos-((autostereogram_settings.colum_width-offset)*4);
 
-	      canv_data[pos] = canv_data[pixel_to_access];
-	      canv_data[pos+1] = canv_data[pixel_to_access+1];
-	      canv_data[pos+2] = canv_data[pixel_to_access+2];
-	      canv_data[pos+3] = 255;
-       /*Using linear filter*/
-      }else
-      {
-	      /*assining the correct color value to the pixel*/
-	      var pixel_to_access = pos-((autostereogram_settings.colum_width-offset)*4);
+	        canv_data[pos] = canv_data[pixel_to_access];
+	        canv_data[pos+1] = canv_data[pixel_to_access+1];
+	        canv_data[pos+2] = canv_data[pixel_to_access+2];
+	        canv_data[pos+3] = 255;
+         /*Using linear filter*/
+        }else
+        {
+	        /*assining the correct color value to the pixel*/
+	        var pixel_to_access = pos-((autostereogram_settings.colum_width-offset)*4);
 
-        /*Calculates the weight of the selctet pixel*/
-        var weigth = (autostereogram_settings.max_shift/255)*canv_data[pos] - offset;
-	      canv_data[pos] = get_weight(canv_data[pixel_to_access],canv_data[pixel_to_access+4],weigth);
-	      canv_data[pos+1] = get_weight(canv_data[pixel_to_access+1],canv_data[pixel_to_access+5],weigth);
-	      canv_data[pos+2] = get_weight(canv_data[pixel_to_access+2],canv_data[pixel_to_access+6],weigth);
-	      canv_data[pos+3] = 255;
+          /*Calculates the weight of the selctet pixel*/
+          var weigth = (autostereogram_settings.max_shift/255)*canv_data[pos] - offset;
+	        canv_data[pos] = get_weight(canv_data[pixel_to_access],canv_data[pixel_to_access+4],weigth);
+	        canv_data[pos+1] = get_weight(canv_data[pixel_to_access+1],canv_data[pixel_to_access+5],weigth);
+	        canv_data[pos+2] = get_weight(canv_data[pixel_to_access+2],canv_data[pixel_to_access+6],weigth);
+	        canv_data[pos+3] = 255;
+        }
+      /*"hidden" pixels need to be filled randomly (or by distorted pattern)*/
+    if(autostereogram_settings.remove_hidden_surface)
+    {
+        if(hidden[y][x] !== 0)
+        {
+           if(autostereogram_settings.random_dot==false)
+           {
+            /*shifting each line to create a new pattern based on the original. this avoids unwanted artifacts*/
+            var pixel_to_access = pos-(y%(autostereogram_settings.colum_width-16) + 16)*4;
+
+	          canv_data[pos] = get_weight(canv_data[pixel_to_access],canv_data[pos],1-hidden[y][x])
+	          canv_data[pos+1] = get_weight(canv_data[pixel_to_access+1],canv_data[pos+1],1-hidden[y][x])
+	          canv_data[pos+2] = get_weight(canv_data[pixel_to_access+2],canv_data[pos+2],1-hidden[y][x])
+	          canv_data[pos+3] = 255;
+
+           }else
+           {
+            /*if there is no pattern, we can fill each pixel randomly instead, creating new information and thus avoiding artefacts*/
+            canv_data[pos] = Math.floor(autostereogram_settings.rmin + Math.random() * (autostereogram_settings.rmax+1));
+	          canv_data[pos+1] = Math.floor(autostereogram_settings.gmin + Math.random() * (autostereogram_settings.gmax+1));
+	          canv_data[pos+2] = Math.floor(autostereogram_settings.bmin + Math.random() * (autostereogram_settings.bmax+1));
+	          canv_data[pos+3] = 255;
+          }
+        }
       }
     }
   }
