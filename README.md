@@ -1,3 +1,9 @@
+# i do not recomend using this program
+while it does create autostereograms the algorithm used is not physically accurate.
+This results in some artefacts and a non-linear depth representation.
+There are a lot of good papers on this topic and i plan to reimplement the program,
+using a better algorithem.
+
 # autostereogram
 standalone js autostereogram generator with demo webpage.
 
@@ -22,6 +28,6 @@ create\_stereogram(depth,pattern) will return a canvas element with the "stereoi
 7. downscale: scales the finished stereogram. 2 = 50%, 0.5 = 200%
 8. pattern_scale : scaling of the pattern image. 2 = 200%, 0,5 = 50%
 9. pattern_shift : negative amount pattern will be shiftet, if the pattern is smaller than the colum width. May be used to avoid alialising
-10. remove\_hidden\_surface : removes "unseen" areas of the image, eliminating image artifacts
+10. remove\_hidden\_surface : tries to remove "unseen" areas of the image, mostly eliminating image artifacts
 
 
